@@ -7,6 +7,9 @@
 #include "TStyle.h"
 #include <string>
 
+#include "TMath.h"
+#include "TVector2.h"
+
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -118,3 +121,29 @@ double getTriggerSF(float Lepton_pdgId, float Ele_Trigger_SF, float Mu_Trigger_S
   else if (abs(Lepton_pdgId) == 13) weight = Mu_Trigger_SF;
   return weight;
 }
+
+// Take GoodFatJet from Rajarshi's code
+// Returns indices of CleanJets not overlapping with any good FatJet (ΔR < 0.8)
+inline RVec<int> getCleanJetNotOverlapping(
+    const RVec<Float_t>& GoodFatJet_eta,
+    const RVec<Float_t>& GoodFatJet_phi,
+    const RVec<Float_t>& CleanJet_eta,
+    const RVec<Float_t>& CleanJet_phi
+) {
+    RVec<int> nonOverlappingJets;
+    for (size_t iJet = 0; iJet < CleanJet_eta.size(); ++iJet) {
+        bool isOverlapping = false;
+        for (size_t iFat = 0; iFat < GoodFatJet_eta.size(); ++iFat) {
+            float deta = CleanJet_eta[iJet] - GoodFatJet_eta[iFat];
+            float dphi = TVector2::Phi_mpi_pi(CleanJet_phi[iJet] - GoodFatJet_phi[iFat]);
+            float deltaR = sqrt(deta*deta + dphi*dphi);
+            if (deltaR < 0.8) {
+                isOverlapping = true;
+                break;
+            }
+        }
+        if (!isOverlapping) nonOverlappingJets.push_back(iJet);
+    }
+    return nonOverlappingJets;
+}
+
