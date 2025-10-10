@@ -101,7 +101,7 @@ def makeRDF(dataset_name):
     "nBJets_veto", "Sum(CleanJet_pt[CleanJet_notOverlapping] > 20 && abs(CleanJet_eta[CleanJet_notOverlapping]) < 2.5 && Jet_btagDeepFlavB[CleanJet_jetIdx[CleanJet_notOverlapping]] > 0.2783)"
 )
     df = df.Filter("nBJets_veto == 0", "B-jet veto")
-
+    results["Cutflow5"] = df.Histo1D(("h_cutflow_5","Cutflow 5",1,-0.5,0.5),"cutflow_stage","weight")
 
 
     report = df.Report()
@@ -129,4 +129,6 @@ histograms["ggH_sonly_off"]["Cutflow1"].Write()
 histograms["ggH_sonly_off"]["Cutflow2"].Write()
 histograms["ggH_sonly_off"]["Cutflow3"].Write()
 histograms["ggH_sonly_off"]["Cutflow4"].Write()
+histograms["ggH_sonly_off"]["Cutflow5"].Write()
 output_file.Close()
+
