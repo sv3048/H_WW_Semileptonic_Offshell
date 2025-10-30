@@ -21,7 +21,7 @@ def makeRDF(dataset_name, wtagger="Nominal"):
     #ROOT.RDF.Experimental.AddProgressBar(df_run)
     sum_result = df_run.Sum("genEventSumw")
     genEventSumw = sum_result.GetValue()
-    #print(f"genEventSumw = {genEventSumw}")
+    print(f"genEventSumw = {genEventSumw}")
     h1 = ROOT.TH1F("genEventWeight", "Example Histogram;X-axis Label;Y-axis Label", 5, -0.5, 4.5)
     h1.SetBinContent(1, genEventSumw)
  
@@ -50,6 +50,9 @@ def makeRDF(dataset_name, wtagger="Nominal"):
         df = df.Define("gstarHighWeight", "1.14 * float(gstarHigh(Gen_ZGstar_mass))")
         df = df.Define("VgWeight", "gstarLowWeight + gstarHighWeight")
         df = df.Define("GenLHE", "GenLHE(LHEPart_pdgId)")
+        if dataset_name in ["ggH_bonly_on", "ggH_bonly_off"]:
+            df = df.Define("Lhe_mWW", "computeMWW(nLHEPart, LHEPart_pt, LHEPart_eta, LHEPart_phi, LHEPart_mass, LHEPart_pdgId, LHEPart_status)")
+
         if isSignal:
             df = df.Define("Lhe_mWW", "computeMWW(nLHEPart, LHEPart_pt, LHEPart_eta, LHEPart_phi, LHEPart_mass, LHEPart_pdgId, LHEPart_status)")
             if isOffshell:
@@ -80,7 +83,7 @@ def makeRDF(dataset_name, wtagger="Nominal"):
     # Using direct HLT filter
     df = df.Filter("HLT_IsoMu24 || HLT_Ele32_WPTight_Gsf","HLT Cut")
     results["Cutflow_Trigger"] = df.Histo1D(("h_cutflow_Trigger","Cutflow Trigger",1,-0.5,0.5),"cutflow_stage","weight")
-
+    
      
     ele_tight = "(abs(Lepton_pdgId) == 11 && Lepton_isTightElectron_mvaFall17V2Iso_WP90)"
     mu_tight = "(abs(Lepton_pdgId) == 13 && Lepton_isTightMuon_cut_Tight_HWWW)"
@@ -94,6 +97,20 @@ def makeRDF(dataset_name, wtagger="Nominal"):
     df = df.Define("Leading_Lepton_pdgId","Lepton_pdgId[0]")
     df = df.Define("Leading_Lepton_electronIdx","Lepton_electronIdx[0]")
     df = df.Define("Leading_Lepton_muonIdx","Lepton_muonIdx[0]")
+
+    # test 
+     # 1. nLepton >= 1 
+    df = df.Filter("nLepton >= 1", "Step 3: At Least One Lepton")
+    results["Cutflow_Step3_NLepton"] = df.Histo1D(("h_cutflow_Step3_NLepton","Cutflow Step 3 NLepton",1,-0.5,0.5),"cutflow_stage","weight")
+
+    # 2. Lepton_pt[0] >= 25 ( this is a redundant cut as it is already applied in isAnalysisLepton function with higher cuts for eg. >35 for electrons and >27 for muons)
+    df = df.Filter("Leading_Lepton_pt >= 25", "Step 3: Leading Lepton pt >= 25 GeV")
+    results["Cutflow_Step3_LeptonPt"] = df.Histo1D(("h_cutflow_Step3_LeptonPt","Cutflow Step 3 Lepton Pt",1,-0.5,0.5),"cutflow_stage","weight")
+
+    # 3. Leading Lepton Tight ID
+    df = df.Filter("Leading_Lepton_isTight", "Step 3: Leading Lepton Tight ID")
+    results["Cutflow_Step3_LeptonTightID"] = df.Histo1D(("h_cutflow_Step3_LeptonTightID","Cutflow Step 3 Lepton Tight ID",1,-0.5,0.5),"cutflow_stage","weight")
+
     
     if isMC:
         df = df.Define("Leading_Lepton_promptgenmatched","Lepton_promptgenmatched[0]")
@@ -276,7 +293,7 @@ elif args.run == "sig":
     #histograms["ST_t-channel_antitop"] = makeRDF("ST_t-channel_antitop",args.wtag)
     #histograms["ST_t-channel_top"] = makeRDF("ST_t-channel_top",args.wtag)
     #histograms["ST_tW_antitop"] = makeRDF("ST_tW_antitop",args.wtag)
-    histograms["ST_tW_top"] = makeRDF("ST_tW_top",args.wtag)
+    histograms["ggH_sonly_off"] = makeRDF("ggH_sonly_off",args.wtag)
 else:
     print("Right")
     for keys in dataset:
