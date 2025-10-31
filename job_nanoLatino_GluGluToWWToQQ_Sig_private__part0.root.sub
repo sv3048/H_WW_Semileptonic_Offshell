@@ -1,0 +1,15 @@
+universe = vanilla
+executable = run_job.sh
+arguments = /eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_106x_nAODv9_Full2018v9/MCl1loose2018v9__MCCorr2018v9NoJERInHorn__MCCombJJLNu2018/nanoLatino_GluGluToWWToQQ_Sig_private__part0.root output
+output = condor_logs/nanoLatino_GluGluToWWToQQ_Sig_private__part0.root.out
+error  = condor_logs/nanoLatino_GluGluToWWToQQ_Sig_private__part0.root.err
+log    = condor_logs/nanoLatino_GluGluToWWToQQ_Sig_private__part0.root.log
+request_cpus = 1
+request_memory = 2GB
+request_disk = 5GB
++MaxRuntime = 36000
+transfer_input_files = Dataset.py,Analysis.py,SemiLeptonic.h
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+getenv = True
+queue 1

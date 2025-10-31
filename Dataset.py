@@ -16,9 +16,9 @@ def list_files_in_folder(folder_path, search_string=None):
         print(f"Error: Folder not found at '{folder_path}'")
     return found_files
 #Step_3
-mc_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_106x_nAODv9_Full2018v9/MCl1loose2018v9__MCCorr2018v9NoJERInHorn__MCCombJJLNu2018"
+#mc_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_106x_nAODv9_Full2018v9/MCl1loose2018v9__MCCorr2018v9NoJERInHorn__MCCombJJLNu2018"
 #Step_2
-#mc_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_106x_nAODv9_Full2018v9/MCl1loose2018v9__MCCorr2018v9NoJERInHorn"
+mc_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_106x_nAODv9_Full2018v9/MCl1loose2018v9__MCCorr2018v9NoJERInHorn"
 
 #Step_1
 #mc_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_106x_nAODv9_Full2018v9/MCl1loose2018v9"
@@ -27,6 +27,7 @@ mc_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Summer20UL18_
 sig_path = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Sig"
 
 dataset = { 
+    
     "data": {
         "files": list_files_in_folder("/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Run2018_UL2018_nAODv9_Full2018v9/DATAl1loose2018v9__DATACombJJLNu2018/"),
         "isMC": False,
@@ -414,14 +415,7 @@ dataset = {
         "sample_weights": None,
         "sample_filters": "Lhe_mWW < 160"
     },
-    "ggH_sonly_off": {
-        "files": list_files_in_folder(mc_path, "GluGluToWWToQQ_Sig_private"),
-        "isMC": True,
-        "isSignal": True,
-        "isOffshell": True,
-        "sample_weights": None,
-        "sample_filters": "Lhe_mWW > 160"
-    },
+    
     "ggH_sand_off": {
         "files": list_files_in_folder(mc_path, "GluGluToWWToQQ_SBI_private"),
         "isMC": True,
@@ -437,5 +431,27 @@ dataset = {
         "isOffshell": False,
         "sample_weights": None,
         "sample_filters": "Lhe_mWW < 160"
+    },
+    
+     "ggH_sonly_off": {
+        "files": list_files_in_folder(mc_path, "GluGluToWWToQQ_Sig_private"),
+        "isMC": True,
+        "isSignal": True,
+        "isOffshell": True,
+        "sample_weights": None,
+        "sample_filters": "Lhe_mWW > 160"
     }
+
+    
 }
+
+# dataset = {
+#   "ggH_sonly_off": {
+#         "files": list_files_in_folder(mc_path, "GluGluToWWToQQ_Sig_private"),
+#         "isMC": True,
+#         "isSignal": True,
+#         "isOffshell": True,
+#         "sample_weights": None,
+#         "sample_filters": "Lhe_mWW > 160"
+#     }
+# }

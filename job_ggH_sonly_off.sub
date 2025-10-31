@@ -1,0 +1,15 @@
+universe = vanilla
+executable = run_job.sh
+arguments = ggH_sonly_off results
+output = condor_logs/ggH_sonly_off.out
+error = condor_logs/ggH_sonly_off.err
+log = condor_logs/ggH_sonly_off.log
+request_cpus = 1
+request_memory = 2GB
+request_disk = 5GB
++MaxRuntime = 43200
+transfer_input_files = Dataset.py,Analysis.py,SemiLeptonic.h
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+getenv = True
+queue 1
