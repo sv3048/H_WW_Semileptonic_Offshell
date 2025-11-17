@@ -148,10 +148,19 @@ def makeRDF(dataset_name, wtagger="Nominal"):
     df = df.Define("AnaFatJet_mass", "FatJet_mass[GoodFatJet_idx]")
     df = df.Define("AnaFatJet_msoftdrop", "FatJet_msoftdrop[GoodFatJet_idx]")
     df = df.Define("AnaFatJet_jetId","FatJet_jetId[GoodFatJet_idx]")
-    
-
-    
    
+    # Identify origin of FatJet using gen-matching
+    #df = df.Define("FatJet_genMatch", "getFatJetGenMatch(AnaFatJet_eta[0], AnaFatJet_phi[0], nGenPart, GenPart_eta, GenPart_phi, GenPart_pdgId)")
+
+    df = df.Define("FatJet_genMatch", "getFatJetGenMatch(AnaFatJet_eta, AnaFatJet_phi, nGenPart, GenPart_eta, GenPart_phi, GenPart_pdgId)")
+
+    if dataset_name in ["ggH_sonly_off","TTToSemiLeptonic"]:
+        n_W = df.Filter("FatJet_genMatch == 24").Count().GetValue()
+        n_top = df.Filter("FatJet_genMatch == 6").Count().GetValue()
+        n_b = df.Filter("FatJet_genMatch == 5").Count().GetValue()
+        n_unmatched = df.Filter("FatJet_genMatch == 0").Count().GetValue()
+        print(f"{dataset_name} FatJet gen-matching: W={n_W}, top={n_top}, b={n_b}, unmatched={n_unmatched}")
+            
     if wtagger == "Nominal":
         df = df.Define("AnaFatJet_nom_wtag","FatJet_particleNet_WvsQCD[GoodFatJet_idx]")
         if isMC:
@@ -268,12 +277,13 @@ elif args.run == "sig+sbi":
 #    histograms["ggH_sand_off"] = makeRDF("ggH_sand_off",args.wtag)
 elif args.run == "sig":
     print("Wrong3")
-    histograms["ggH_sonly_off"] = makeRDF("ggH_sonly_off",args.wtag)
+    #histograms["ggH_sonly_off"] = makeRDF("ggH_sonly_off",args.wtag)
     #histograms["ST_s-channel"] = makeRDF("ST_s-channel",args.wtag)
     #histograms["ST_t-channel_antitop"] = makeRDF("ST_t-channel_antitop",args.wtag)
     #histograms["ST_t-channel_top"] = makeRDF("ST_t-channel_top",args.wtag)
     #histograms["ST_tW_antitop"] = makeRDF("ST_tW_antitop",args.wtag)
     #histograms["ST_tW_top"] = makeRDF("ST_tW_top",args.wtag)
+    histograms["TTToSemiLeptonic"] = makeRDF("TTToSemiLeptonic",args.wtag)
 else:
     print("Right")
     for keys in dataset:

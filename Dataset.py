@@ -338,5 +338,14 @@ dataset = {
         "isOffshell": True,
         "sample_weights": None,
         "sample_filters": None
+    },
+     "TTToSemiLeptonic": {
+        "files": list_files_in_folder(mc_path, "TTToSemiLeptonic"),
+        "isMC": True,
+        "isSignal": False,
+        "isOffshell": False,
+        "sample_weights": None,
+        #"sample_filters": "Top_pTrw"
+        "sample_filters": None
     }
 }
