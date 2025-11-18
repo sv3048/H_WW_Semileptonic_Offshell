@@ -253,47 +253,47 @@ inline double computePUJetIdSF(const UInt_t& nJet,
     return TMath::Exp(logSum);
 }
 
-// // genjjMax -> Check carefully again if anything. is redundant
-// //  for addition of Samples Weight and cuts
-// // Computes the maximum mjj from all pairs of GenJets not overlapping with GenDressedLeptons
-// inline double genMjjmax(const UInt_t& nGenJet,
-//                        const RVec<Double_t>& GenJet_pt,
-//                        const RVec<Double_t>& GenJet_eta,
-//                        const RVec<Double_t>& GenJet_phi,
-//                        const RVec<Double_t>& GenJet_mass,
-//                        const UInt_t& nGenDressedLepton,
-//                        const RVec<Double_t>& GenDressedLepton_pt,
-//                        const RVec<Double_t>& GenDressedLepton_eta,
-//                        const RVec<Double_t>& GenDressedLepton_phi) {
-//     std::vector<int> cleanJetIdx;
-//     // Select GenJets with pt > 30 and |eta| < 4.7, not overlapping with GenDressedLeptons (ΔR > 0.4)
-//     for (UInt_t iJ = 0; iJ < nGenJet; ++iJ) {
-//         if (GenJet_pt[iJ] < 30. || std::abs(GenJet_eta[iJ]) > 4.7) continue;
-//         bool overlap = false;
-//         for (UInt_t iL = 0; iL < nGenDressedLepton; ++iL) {
-//             if (GenDressedLepton_pt[iL] < 10.) continue;
-//             double dr = deltaR(GenJet_eta[iJ], GenJet_phi[iJ], GenDressedLepton_eta[iL], GenDressedLepton_phi[iL]);
-//             if (dr < 0.4) {
-//                 overlap = true;
-//                 break;
-//             }
-//         }
-//         if (!overlap) cleanJetIdx.push_back(iJ);
-//     }
-//     double mjjmax = -999.;
-//     // Loop over all pairs of clean jets and compute mjj
-//     for (size_t i = 0; i < cleanJetIdx.size(); ++i) {
-//         TLorentzVector j1;
-//         j1.SetPtEtaPhiM(GenJet_pt[cleanJetIdx[i]], GenJet_eta[cleanJetIdx[i]], GenJet_phi[cleanJetIdx[i]], GenJet_mass[cleanJetIdx[i]]);
-//         for (size_t j = i+1; j < cleanJetIdx.size(); ++j) {
-//             TLorentzVector j2;
-//             j2.SetPtEtaPhiM(GenJet_pt[cleanJetIdx[j]], GenJet_eta[cleanJetIdx[j]], GenJet_phi[cleanJetIdx[j]], GenJet_mass[cleanJetIdx[j]]);
-//             double mjj = (j1 + j2).M();
-//             if (mjj > mjjmax) mjjmax = mjj;
-//         }
-//     }
-//     return mjjmax;
-// }
+// genjjMax -> Check carefully again if anything. is redundant
+//  for addition of Samples Weight and cuts
+// Computes the maximum mjj from all pairs of GenJets not overlapping with GenDressedLeptons
+inline double genMjjmax(const UInt_t& nGenJet,
+                       const RVec<Double_t>& GenJet_pt,
+                       const RVec<Double_t>& GenJet_eta,
+                       const RVec<Double_t>& GenJet_phi,
+                       const RVec<Double_t>& GenJet_mass,
+                       const UInt_t& nGenDressedLepton,
+                       const RVec<Double_t>& GenDressedLepton_pt,
+                       const RVec<Double_t>& GenDressedLepton_eta,
+                       const RVec<Double_t>& GenDressedLepton_phi) {
+    std::vector<int> cleanJetIdx;
+    // Select GenJets with pt > 30 and |eta| < 4.7, not overlapping with GenDressedLeptons (ΔR > 0.4)
+    for (UInt_t iJ = 0; iJ < nGenJet; ++iJ) {
+        if (GenJet_pt[iJ] < 30. || std::abs(GenJet_eta[iJ]) > 4.7) continue;
+        bool overlap = false;
+        for (UInt_t iL = 0; iL < nGenDressedLepton; ++iL) {
+            if (GenDressedLepton_pt[iL] < 10.) continue;
+            double dr = deltaR(GenJet_eta[iJ], GenJet_phi[iJ], GenDressedLepton_eta[iL], GenDressedLepton_phi[iL]);
+            if (dr < 0.4) {
+                overlap = true;
+                break;
+            }
+        }
+        if (!overlap) cleanJetIdx.push_back(iJ);
+    }
+    double mjjmax = -999.;
+    // Loop over all pairs of clean jets and compute mjj
+    for (size_t i = 0; i < cleanJetIdx.size(); ++i) {
+        TLorentzVector j1;
+        j1.SetPtEtaPhiM(GenJet_pt[cleanJetIdx[i]], GenJet_eta[cleanJetIdx[i]], GenJet_phi[cleanJetIdx[i]], GenJet_mass[cleanJetIdx[i]]);
+        for (size_t j = i+1; j < cleanJetIdx.size(); ++j) {
+            TLorentzVector j2;
+            j2.SetPtEtaPhiM(GenJet_pt[cleanJetIdx[j]], GenJet_eta[cleanJetIdx[j]], GenJet_phi[cleanJetIdx[j]], GenJet_mass[cleanJetIdx[j]]);
+            double mjj = (j1 + j2).M();
+            if (mjj > mjjmax) mjjmax = mjj;
+        }
+    }
+    return mjjmax;
+}
 
 // Returns true if Gen_ZGstar_mass > 0 and < 4 (gstarLow)
 inline bool gstarLow(double Gen_ZGstar_mass) {
@@ -362,13 +362,13 @@ inline float Top_pTrw(const ROOT::VecOps::RVec<int>& GenPart_pdgId,
     }
 }
 
-// inline int GenLHE(const ROOT::VecOps::RVec<int>& LHEPart_pdgId) {
-//     int sum = 0;
-//     for (auto pdgId : LHEPart_pdgId) {
-//         if (pdgId == 21) sum++;
-//     }
-//     return sum == 0;
-// }
+inline int GenLHE(const ROOT::VecOps::RVec<int>& LHEPart_pdgId) {
+    int sum = 0;
+    for (auto pdgId : LHEPart_pdgId) {
+        if (pdgId == 21) sum++;
+    }
+    return sum == 0;
+}
 
 // inline float Top_pTrw(const ROOT::VecOps::RVec<int>& GenPart_pdgId,
 //                       const ROOT::VecOps::RVec<unsigned int>& GenPart_statusFlags,
@@ -403,7 +403,6 @@ inline float Top_pTrw(const ROOT::VecOps::RVec<int>& GenPart_pdgId,
 inline bool isHoleLepton(const double cand_eta, const double cand_phi, const double pdgId){
   if(abs(pdgId) == 13) return false;
   if(abs(pdgId) == 11) return isHole_ex(cand_eta,cand_phi);
-  return false; // Default return for other cases # fix ?
 }
 
 inline double getHiggsCandidate (const Float_t& Lepton_pt, const Float_t& Lepton_eta, const Float_t& Lepton_phi,
@@ -416,27 +415,151 @@ inline double getHiggsCandidate (const Float_t& Lepton_pt, const Float_t& Lepton
   if(var == 1) return H_vis.Pt();
   if(var == 2) return H_vis.Eta();
   if(var == 3) return H_vis.Phi();
-  return -999.0; //fix ? 
 }
 
 
+
+// int getFatJetGenMatch(float fatjet_eta, float fatjet_phi, unsigned int nGenPart, 
+//                       const ROOT::RVec<float>& GenPart_eta, 
+//                       const ROOT::RVec<float>& GenPart_phi, 
+//                       const ROOT::RVec<int>& GenPart_pdgId) {
+//     float minDR = 0.8;
+//     int matchId = 0;
+//     for (unsigned int i = 0; i < nGenPart; ++i) {
+//         float dEta = fatjet_eta - GenPart_eta[i];
+//         float dPhi = std::abs(fatjet_phi - GenPart_phi[i]);
+//         if (dPhi > M_PI) dPhi = 2 * M_PI - dPhi;
+//         float dR = std::sqrt(dEta*dEta + dPhi*dPhi);
+//         if (dR < minDR) {
+//             minDR = dR;
+//             matchId = GenPart_pdgId[i];
+//         }
+//     }
+//     return matchId;
+// }
 
 int getFatJetGenMatch(float fatjet_eta, float fatjet_phi, unsigned int nGenPart, 
                       const ROOT::RVec<float>& GenPart_eta, 
                       const ROOT::RVec<float>& GenPart_phi, 
-                      const ROOT::RVec<int>& GenPart_pdgId) {
+                      const ROOT::RVec<int>& GenPart_pdgId,
+                      const ROOT::RVec<int>& GenPart_status,
+                      const ROOT::RVec<int>& GenPart_statusFlags,
+                      const ROOT::RVec<int>& GenPart_genPartIdxMother) {
     float minDR = 0.8;
     int matchId = 0;
+    
     for (unsigned int i = 0; i < nGenPart; ++i) {
-        float dEta = fatjet_eta - GenPart_eta[i];
-        float dPhi = std::abs(fatjet_phi - GenPart_phi[i]);
-        if (dPhi > M_PI) dPhi = 2 * M_PI - dPhi;
-        float dR = std::sqrt(dEta*dEta + dPhi*dPhi);
+        int pdgId = std::abs(GenPart_pdgId[i]);
+        
+        // Only consider W (24), top (6), or b (5)
+        if (pdgId != 24 && pdgId != 6 && pdgId != 5) continue;
+        
+        //  deltaR:  using your existing function by Rajarshi 
+        double dR = deltaR(fatjet_eta, fatjet_phi, GenPart_eta[i], GenPart_phi[i]);
+        
+        if (dR >= minDR) continue; 
+        
+        // Find daughter particles and check if any daughter is a W boson
+        bool hasDaughters = false;
+        bool daughterIsW = false;
+        
+        std::cout << "GenPart[" << i << "]: pdgId=" << GenPart_pdgId[i] 
+                  << ", status=" << GenPart_status[i]
+                  << ", statusFlags=" << GenPart_statusFlags[i]
+                  << ", dR=" << dR << std::endl;
+        std::cout << "  Daughters: ";
+        
+        for (unsigned int j = 0; j < nGenPart; ++j) {
+            if (GenPart_genPartIdxMother[j] == (int)i) {
+                hasDaughters = true;
+                int daughterPdgId = std::abs(GenPart_pdgId[j]);
+                std::cout << "GenPart[" << j << "] (pdgId=" << GenPart_pdgId[j] 
+                         << ", status=" << GenPart_status[j] << ") ";
+                
+                // Check if daughter is also a W boson
+                if (daughterPdgId == 24) {
+                    daughterIsW = true;
+                }
+            }
+        }
+        if (!hasDaughters) {
+            std::cout << "None";
+        }
+        std::cout << std::endl;
+        
+        // Skip if this W decays to another W (intermediate copy)
+        if (pdgId == 24 && daughterIsW) {
+            std::cout << "  -> SKIPPED (intermediate W, decays to another W)" << std::endl;
+            continue;
+        }
+        
+        // Update match if this is the closest particle
         if (dR < minDR) {
             minDR = dR;
-            matchId = GenPart_pdgId[i];
+            matchId = pdgId;
+            std::cout << "  -> MATCHED! minDR=" << minDR << ", matchId=" << matchId << std::endl;
         }
     }
+    
     return matchId;
 }
 
+void checkWBosonDaughters(unsigned int nGenPart,
+                         const ROOT::RVec<int>& GenPart_pdgId,
+                         const ROOT::RVec<int>& GenPart_statusFlags,
+                         const ROOT::RVec<int>& GenPart_genPartIdxMother) {
+    
+    static int eventCount = 0;
+    eventCount++;
+    if (eventCount > 10) return;  // Only check first 10 events
+    
+    std::cout << "\n=== Event " << eventCount << " ===" << std::endl;
+    
+    int nWBosons = 0;
+    int nLeptonicW = 0;
+    int nHadronicW = 0;
+    
+    for (unsigned int i = 0; i < nGenPart; ++i) {
+        int pdgId = std::abs(GenPart_pdgId[i]);
+        if (pdgId != 24) continue;  // Only W bosons
+        
+        bool isLastCopy = (GenPart_statusFlags[i] & (1 << 13)) != 0;
+        if (!isLastCopy) continue;
+        
+        // Check daughters
+        bool hasWDaughter = false;
+        bool hasLeptonDaughter = false;
+        bool hasQuarkDaughter = false;
+        
+        for (unsigned int j = 0; j < nGenPart; ++j) {
+            if (GenPart_genPartIdxMother[j] == (int)i) {
+                int daughterPdgId = std::abs(GenPart_pdgId[j]);
+                if (daughterPdgId == 24) hasWDaughter = true;
+                if (daughterPdgId >= 11 && daughterPdgId <= 16) hasLeptonDaughter = true;  // leptons/neutrinos
+                if (daughterPdgId >= 1 && daughterPdgId <= 5) hasQuarkDaughter = true;     // quarks
+            }
+        }
+        
+        // Skip intermediate W bosons
+        if (hasWDaughter) continue;
+        
+        nWBosons++;
+        std::cout << "W[" << i << "]: daughters = ";
+        for (unsigned int j = 0; j < nGenPart; ++j) {
+            if (GenPart_genPartIdxMother[j] == (int)i) {
+                std::cout << GenPart_pdgId[j] << " ";
+            }
+        }
+        
+        if (hasLeptonDaughter) {
+            std::cout << " (leptonic W)";
+            nLeptonicW++;
+        } else if (hasQuarkDaughter) {
+            std::cout << " (hadronic W)";
+            nHadronicW++;
+        }
+        std::cout << std::endl;
+    }
+    
+    std::cout << "Summary: nW=" << nWBosons << ", leptonic=" << nLeptonicW << ", hadronic=" << nHadronicW << std::endl;
+}

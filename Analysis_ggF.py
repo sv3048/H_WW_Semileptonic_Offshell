@@ -27,15 +27,15 @@ def makeRDF(dataset_name, wtagger="Nominal"):
     df = ROOT.RDataFrame("Events", files)
 
     # Check W boson daughters for first 10 events
-    #if isMC and dataset_name == "ggH_sonly_off":
-    if isMC and dataset_name == "TTToSemiLeptonic":
+    if isMC and dataset_name == "ggH_sonly_off":
+    #if isMC and dataset_name == "TTToSemiLeptonic":
 
         df_temp = df.Range(10)
         df_temp = df_temp.Define("check", "checkWBosonDaughters(nGenPart, GenPart_pdgId, GenPart_statusFlags, GenPart_genPartIdxMother); return 1;")
         df_temp.Sum("check").GetValue()  # Trigger execution
         print("\n")
 
-    #df = df.Range(2000000)
+    #df = df.Range()
     #ROOT.RDF.Experimental.AddProgressBar(df)
     #XS_Weight_cal = (59.7*1000*0.775)/genEventSumw
     if isSignal: 
@@ -211,7 +211,7 @@ def makeRDF(dataset_name, wtagger="Nominal"):
 
     # Following block is for checking gen-matching only 
     #if dataset_name in ["ggH_sonly_off"]:
-    if dataset_name in ["TTToSemiLeptonic"]:
+    if dataset_name in ["ggH_sonly_off"]:
         n_W = df.Filter("FatJet_genMatch == 24").Count().GetValue()
         n_top = df.Filter("FatJet_genMatch == 6").Count().GetValue()
         n_b = df.Filter("FatJet_genMatch == 5").Count().GetValue()
@@ -295,13 +295,13 @@ elif args.run == "sig+sbi":
 #    histograms["ggH_sand_off"] = makeRDF("ggH_sand_off",args.wtag)
 elif args.run == "sig":
     print("Wrong3")
-    #histograms["ggH_sonly_off"] = makeRDF("ggH_sonly_off",args.wtag)
+    histograms["ggH_sonly_off"] = makeRDF("ggH_sonly_off",args.wtag)
     #histograms["ST_s-channel"] = makeRDF("ST_s-channel",args.wtag)
     #histograms["ST_t-channel_antitop"] = makeRDF("ST_t-channel_antitop",args.wtag)
     #histograms["ST_t-channel_top"] = makeRDF("ST_t-channel_top",args.wtag)
     #histograms["ST_tW_antitop"] = makeRDF("ST_tW_antitop",args.wtag)
     #histograms["ST_tW_top"] = makeRDF("ST_tW_top",args.wtag)
-    histograms["TTToSemiLeptonic"] = makeRDF("TTToSemiLeptonic",args.wtag)
+    #histograms["TTToSemiLeptonic"] = makeRDF("TTToSemiLeptonic",args.wtag)
 else:
     print("Right")
     for keys in dataset:
