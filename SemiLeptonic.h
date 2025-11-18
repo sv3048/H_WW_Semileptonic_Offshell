@@ -419,24 +419,73 @@ inline double getHiggsCandidate (const Float_t& Lepton_pt, const Float_t& Lepton
 
 
 
+
 // int getFatJetGenMatch(float fatjet_eta, float fatjet_phi, unsigned int nGenPart, 
 //                       const ROOT::RVec<float>& GenPart_eta, 
 //                       const ROOT::RVec<float>& GenPart_phi, 
-//                       const ROOT::RVec<int>& GenPart_pdgId) {
+//                       const ROOT::RVec<int>& GenPart_pdgId,
+//                       const ROOT::RVec<int>& GenPart_status,
+//                       const ROOT::RVec<int>& GenPart_statusFlags,
+//                       const ROOT::RVec<int>& GenPart_genPartIdxMother) {
 //     float minDR = 0.8;
 //     int matchId = 0;
+    
 //     for (unsigned int i = 0; i < nGenPart; ++i) {
-//         float dEta = fatjet_eta - GenPart_eta[i];
-//         float dPhi = std::abs(fatjet_phi - GenPart_phi[i]);
-//         if (dPhi > M_PI) dPhi = 2 * M_PI - dPhi;
-//         float dR = std::sqrt(dEta*dEta + dPhi*dPhi);
+//         int pdgId = std::abs(GenPart_pdgId[i]);
+        
+//         // Only consider W (24), top (6), or b (5)
+//         if (pdgId != 24 && pdgId != 6 && pdgId != 5) continue;
+        
+//         //  deltaR:  using  existing function by Rajarshi 
+//         double dR = deltaR(fatjet_eta, fatjet_phi, GenPart_eta[i], GenPart_phi[i]);
+        
+//         if (dR >= minDR) continue; 
+        
+//         // Find daughter particles and check if any daughter is a W boson
+//         bool hasDaughters = false;
+//         bool daughterIsW = false;
+        
+//         std::cout << "GenPart[" << i << "]: pdgId=" << GenPart_pdgId[i] 
+//                   << ", status=" << GenPart_status[i]
+//                   << ", statusFlags=" << GenPart_statusFlags[i]
+//                   << ", dR=" << dR << std::endl;
+//         std::cout << "  Daughters: ";
+        
+//         for (unsigned int j = 0; j < nGenPart; ++j) {
+//             if (GenPart_genPartIdxMother[j] == (int)i) {
+//                 hasDaughters = true;
+//                 int daughterPdgId = std::abs(GenPart_pdgId[j]);
+//                 std::cout << "GenPart[" << j << "] (pdgId=" << GenPart_pdgId[j] 
+//                          << ", status=" << GenPart_status[j] << ") ";
+                
+//                 // Check if daughter is also a W boson
+//                 if (daughterPdgId == 24) {
+//                     daughterIsW = true;
+//                 }
+//             }
+//         }
+//         if (!hasDaughters) {
+//             std::cout << "None";
+//         }
+//         std::cout << std::endl;
+        
+//         // Skip if this W decays to another W (intermediate copy)
+//         if (pdgId == 24 && daughterIsW) {
+//             std::cout << "  -> SKIPPED (intermediate W, decays to another W)" << std::endl;
+//             continue;
+//         }
+        
+//         // Update match if this is the closest particle
 //         if (dR < minDR) {
 //             minDR = dR;
-//             matchId = GenPart_pdgId[i];
+//             matchId = pdgId;
+//             std::cout << "  -> MATCHED! minDR=" << minDR << ", matchId=" << matchId << std::endl;
 //         }
 //     }
+    
 //     return matchId;
 // }
+
 
 int getFatJetGenMatch(float fatjet_eta, float fatjet_phi, unsigned int nGenPart, 
                       const ROOT::RVec<float>& GenPart_eta, 
@@ -454,55 +503,39 @@ int getFatJetGenMatch(float fatjet_eta, float fatjet_phi, unsigned int nGenPart,
         // Only consider W (24), top (6), or b (5)
         if (pdgId != 24 && pdgId != 6 && pdgId != 5) continue;
         
-        //  deltaR:  using your existing function by Rajarshi 
+        // Calculate deltaR
         double dR = deltaR(fatjet_eta, fatjet_phi, GenPart_eta[i], GenPart_phi[i]);
         
-        if (dR >= minDR) continue; 
+        if (dR >= minDR) continue;
         
-        // Find daughter particles and check if any daughter is a W boson
-        bool hasDaughters = false;
-        bool daughterIsW = false;
-        
-        std::cout << "GenPart[" << i << "]: pdgId=" << GenPart_pdgId[i] 
-                  << ", status=" << GenPart_status[i]
-                  << ", statusFlags=" << GenPart_statusFlags[i]
-                  << ", dR=" << dR << std::endl;
-        std::cout << "  Daughters: ";
-        
+        // Check daughters - skip if daughter is the same particle type
+        bool daughterIsSameType = false;
         for (unsigned int j = 0; j < nGenPart; ++j) {
             if (GenPart_genPartIdxMother[j] == (int)i) {
-                hasDaughters = true;
                 int daughterPdgId = std::abs(GenPart_pdgId[j]);
-                std::cout << "GenPart[" << j << "] (pdgId=" << GenPart_pdgId[j] 
-                         << ", status=" << GenPart_status[j] << ") ";
-                
-                // Check if daughter is also a W boson
-                if (daughterPdgId == 24) {
-                    daughterIsW = true;
+                // Skip if daughter is same type: W→W, top→top, or b→b
+                if (daughterPdgId == pdgId) {
+                    daughterIsSameType = true;
+                    break;
                 }
             }
         }
-        if (!hasDaughters) {
-            std::cout << "None";
-        }
-        std::cout << std::endl;
         
-        // Skip if this W decays to another W (intermediate copy)
-        if (pdgId == 24 && daughterIsW) {
-            std::cout << "  -> SKIPPED (intermediate W, decays to another W)" << std::endl;
-            continue;
-        }
+        // Skip intermediate copies (W→W, top→top, b→b)
+        if (daughterIsSameType) continue;
         
         // Update match if this is the closest particle
         if (dR < minDR) {
             minDR = dR;
-            matchId = pdgId;
-            std::cout << "  -> MATCHED! minDR=" << minDR << ", matchId=" << matchId << std::endl;
+            if (pdgId == 24) matchId = 1;      // W boson
+            else if (pdgId == 6) matchId = 2;  // top quark
+            else if (pdgId == 5) matchId = 3;  // b quark
         }
     }
     
-    return matchId;
+    return matchId;  // 0=unmatched, 1=W, 2=top, 3=b
 }
+
 
 void checkWBosonDaughters(unsigned int nGenPart,
                          const ROOT::RVec<int>& GenPart_pdgId,
@@ -515,51 +548,33 @@ void checkWBosonDaughters(unsigned int nGenPart,
     
     std::cout << "\n=== Event " << eventCount << " ===" << std::endl;
     
-    int nWBosons = 0;
-    int nLeptonicW = 0;
-    int nHadronicW = 0;
-    
     for (unsigned int i = 0; i < nGenPart; ++i) {
         int pdgId = std::abs(GenPart_pdgId[i]);
-        if (pdgId != 24) continue;  // Only W bosons
+        
+        // Check W (24), top (6), or b (5)
+        if (pdgId != 24 && pdgId != 6 && pdgId != 5) continue;
         
         bool isLastCopy = (GenPart_statusFlags[i] & (1 << 13)) != 0;
         if (!isLastCopy) continue;
         
-        // Check daughters
-        bool hasWDaughter = false;
-        bool hasLeptonDaughter = false;
-        bool hasQuarkDaughter = false;
+        // Print particle type
+        std::string particleType;
+        if (pdgId == 24) particleType = "W";
+        else if (pdgId == 6) particleType = "top";
+        else if (pdgId == 5) particleType = "b";
         
-        for (unsigned int j = 0; j < nGenPart; ++j) {
-            if (GenPart_genPartIdxMother[j] == (int)i) {
-                int daughterPdgId = std::abs(GenPart_pdgId[j]);
-                if (daughterPdgId == 24) hasWDaughter = true;
-                if (daughterPdgId >= 11 && daughterPdgId <= 16) hasLeptonDaughter = true;  // leptons/neutrinos
-                if (daughterPdgId >= 1 && daughterPdgId <= 5) hasQuarkDaughter = true;     // quarks
-            }
-        }
+        std::cout << particleType << "[" << i << "]: daughters = ";
         
-        // Skip intermediate W bosons
-        if (hasWDaughter) continue;
-        
-        nWBosons++;
-        std::cout << "W[" << i << "]: daughters = ";
+        // Print all daughters
+        bool hasDaughters = false;
         for (unsigned int j = 0; j < nGenPart; ++j) {
             if (GenPart_genPartIdxMother[j] == (int)i) {
                 std::cout << GenPart_pdgId[j] << " ";
+                hasDaughters = true;
             }
         }
         
-        if (hasLeptonDaughter) {
-            std::cout << " (leptonic W)";
-            nLeptonicW++;
-        } else if (hasQuarkDaughter) {
-            std::cout << " (hadronic W)";
-            nHadronicW++;
-        }
+        if (!hasDaughters) std::cout << "None";
         std::cout << std::endl;
     }
-    
-    std::cout << "Summary: nW=" << nWBosons << ", leptonic=" << nLeptonicW << ", hadronic=" << nHadronicW << std::endl;
 }

@@ -28,14 +28,14 @@ def makeRDF(dataset_name, wtagger="Nominal"):
 
     # Check W boson daughters for first 10 events
     #if isMC and dataset_name == "ggH_sonly_off":
-    # if isMC and dataset_name == "TTToSemiLeptonic":
+    if isMC and dataset_name == "ggH_sonly_off":
 
-    #     df_temp = df.Range(10)
-    #     df_temp = df_temp.Define("check", "checkWBosonDaughters(nGenPart, GenPart_pdgId, GenPart_statusFlags, GenPart_genPartIdxMother); return 1;")
-    #     df_temp.Sum("check").GetValue()  # Trigger execution
-    #     print("\n")
+        df_temp = df.Range(10)
+        df_temp = df_temp.Define("check", "checkWBosonDaughters(nGenPart, GenPart_pdgId, GenPart_statusFlags, GenPart_genPartIdxMother); return 1;")
+        df_temp.Sum("check").GetValue()  # Trigger execution
+        print("\n")
 
-    #df = df.Range(20)
+    #df = df.Range()
     #ROOT.RDF.Experimental.AddProgressBar(df)
     #XS_Weight_cal = (59.7*1000*0.775)/genEventSumw
     if isSignal: 
@@ -61,10 +61,6 @@ def makeRDF(dataset_name, wtagger="Nominal"):
 
         if isSignal:
             df = df.Define("Lhe_mWW", "computeMWW(nLHEPart, LHEPart_pt, LHEPart_eta, LHEPart_phi, LHEPart_mass, LHEPart_pdgId, LHEPart_status)")
-            
-            #Fill histogram BEFORE applying filter (to check on/off-shell ratio)
-            results["mWW_LHE"] = df.Histo1D(("h_mWW_LHE", "LHE mWW;m_{WW} [GeV];Events", 100, 0, 1000), "Lhe_mWW", "genWeight")
-    
             if isOffshell:
                 df = df.Filter("Lhe_mWW > 160")
             else:
@@ -210,18 +206,30 @@ def makeRDF(dataset_name, wtagger="Nominal"):
     # Identify origin of FatJet using gen-matching
     #df = df.Define("FatJet_genMatch", "getFatJetGenMatch(AnaFatJet_eta[0], AnaFatJet_phi[0], nGenPart, GenPart_eta, GenPart_phi, GenPart_pdgId)")
 
-    #df = df.Define("FatJet_genMatch", "getFatJetGenMatch(AnaFatJet_eta, AnaFatJet_phi, nGenPart, GenPart_eta, GenPart_phi, GenPart_pdgId, GenPart_status, GenPart_statusFlags)")
+    # Gen-matching histogram for ggF_sonly_off signal
+   # Gen-matching histogram for ggF_sonly_off signal
     df = df.Define("FatJet_genMatch", "getFatJetGenMatch(AnaFatJet_eta, AnaFatJet_phi, nGenPart, GenPart_eta, GenPart_phi, GenPart_pdgId, GenPart_status, GenPart_statusFlags, GenPart_genPartIdxMother)")
 
+    results["FatJet_GenMatch"] = df.Histo1D(ROOT.RDF.TH1DModel("h_FatJet_GenMatch", "FatJet Generator-Level Particle Matching;;Events", 4, -0.5, 3.5),
+        "FatJet_genMatch", "weight"
+    )
+
     # Following block is for checking gen-matching only 
-    # if dataset_name in ["ggH_sonly_off"]:
-    # #if dataset_name in ["TTToSemiLeptonic"]:
+    #if dataset_name in ["ggH_sonly_off"]:
+    # if dataset_name in ["TTToSemiLeptonic"]:
     #     n_W = df.Filter("FatJet_genMatch == 24").Count().GetValue()
     #     n_top = df.Filter("FatJet_genMatch == 6").Count().GetValue()
     #     n_b = df.Filter("FatJet_genMatch == 5").Count().GetValue()
     #     n_unmatched = df.Filter("FatJet_genMatch == 0").Count().GetValue()
     #     print(f"{dataset_name} FatJet gen-matching: W={n_W}, top={n_top}, b={n_b}, unmatched={n_unmatched}")
-            
+    # Following block is for checking gen-matching only 
+    if dataset_name in ["ggH_sonly_off"]:
+        n_unmatched = df.Filter("FatJet_genMatch == 0").Count().GetValue()
+        n_W = df.Filter("FatJet_genMatch == 1").Count().GetValue()
+        n_top = df.Filter("FatJet_genMatch == 2").Count().GetValue()
+        n_b = df.Filter("FatJet_genMatch == 3").Count().GetValue()
+        print(f"{dataset_name} FatJet gen-matching: unmatched={n_unmatched}, W={n_W}, top={n_top}, b={n_b}")
+                
    
     if wtagger == "Nominal":
         results["Jet_Nominal_WTagger"] = df.Histo1D(("h_Nominal_WTagger", "WTagger Nominal", 10, 0, 1), "AnaFatJet_nom_wtag","weight")
@@ -320,13 +328,9 @@ else:
     # Use pickle.dump() to save the dictionary
 #    pickle.dump(histograms, f)
 
-output_file = ROOT.TFile("output.root", "RECREATE")
-for key1 in histograms:
-    new_directory = output_file.mkdir(key1)
-    new_directory.cd()
-    for key2 in histograms[key1]:
-        histograms[key1][key2].Write()
-    output_file.cd()
+
+
+
 
 output_file = ROOT.TFile("output.root", "RECREATE")
 for key1 in histograms:
@@ -336,20 +340,27 @@ for key1 in histograms:
         histograms[key1][key2].Write()
     output_file.cd()
 
-# Check on-shell/off-shell ratio
-for sample_name in ["ggH_sonly_off", "ggH_sonly_on"]:
-    if sample_name in histograms and "mWW_LHE" in histograms[sample_name]:
-        h = histograms[sample_name]["mWW_LHE"]
-        
-        int_on = h.Integral(h.FindBin(100), h.FindBin(160) - 1)
-        int_off = h.Integral(h.FindBin(160), h.FindBin(1000))
-        ratio = int_off / int_on if int_on > 0 else 0
-        
-        print(f"\n{sample_name}:")
-        print(f"  On-shell (100-160):  {int_on:.2f}")
-        print(f"  Off-shell (160-1000): {int_off:.2f}")
-        print(f"  Ratio (off/on):      {ratio:.2f}\n")
+
+# Style gen-matching histograms
+for sample_name in histograms:
+    if "FatJet_GenMatch" in histograms[sample_name]:
+        h = histograms[sample_name]["FatJet_GenMatch"]
+        h.SetMinimum(0)
+        h.SetFillColor(ROOT.kAzure-3)
+        h.SetLineColor(ROOT.kBlack)
+        h.SetLineWidth(2)
+        h.SetBarWidth(0.75)
+        h.SetBarOffset(0.125)
+        h.GetXaxis().SetBinLabel(1, "Unmatched")
+        h.GetXaxis().SetBinLabel(2, "W boson")
+        h.GetXaxis().SetBinLabel(3, "Top quark")
+        h.GetXaxis().SetBinLabel(4, "b quark")
+        h.GetXaxis().SetLabelSize(0.05)
+        h.GetYaxis().SetTitle("Events")
+        h.GetYaxis().SetTitleOffset(1.2)
+        h.SetStats(0)  # Remove stats box
 
 output_file.Close()
+
 
 

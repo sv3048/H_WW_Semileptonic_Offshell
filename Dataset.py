@@ -330,6 +330,15 @@ dataset = {
 }
 '''
 dataset = {
+
+     "ggH_sonly_on": {
+        "files": list_files_in_folder(mc_path,'GluGluToWWToQQ_Sig_private'),
+        "isMC": True,
+        "isSignal": True,
+        "isOffshell": False,
+        "sample_weights": None,
+        "sample_filters": None
+    },
     "ggH_sonly_off": {
         "files": list_files_in_folder(mc_path,'GluGluToWWToQQ_Sig_private'),
         #"files": list_files_in_folder(sig_path,'ggHWW'),
